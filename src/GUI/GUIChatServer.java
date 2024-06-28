@@ -7,23 +7,22 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-class GUIChatTCPServer2 {
+class GUIChatServer {
 
-	GUIChatMain chat;
+	String NGColor = "\u001b[00;31m";
+	String end = "\u001b[00m";
 
 	public static void main(String[] args) {
-		new GUIChatTCPServer2(null);
-
+		new GUIChatServer(); 
 	}// mainend
 
-	public GUIChatTCPServer2(GUIChatMain chat) {
-		this.chat = chat;
-		System.out.println("server started:" + this.chat);
+	public GUIChatServer() {
+		System.out.println("server started");
 		System.out.println("creating srv socket");
 
 		ServerSocket serverSoc = null;
 		try {
-			// ポート番号は、5000
+			// ポート番号は、5656
 			// ソケットを作成
 			serverSoc = new ServerSocket(5656);
 			boolean flag = true;
@@ -66,8 +65,7 @@ class GUIChatTCPServer2 {
 
 		public SrvWorkerThread(Socket sct, int thcounter) {
 			soc = sct;
-			System.out.println("Thread " + thcounter
-					+ "is Generated.  Connect to " + soc.getInetAddress());
+			System.out.println("Thread " + thcounter + "is Generated.  Connect to " + soc.getInetAddress());
 		}
 
 		public void run() {
@@ -80,17 +78,12 @@ class GUIChatTCPServer2 {
 				PrintWriter sendout = new PrintWriter(soc.getOutputStream(),true);
 
 				// データ読み取りと表示
-				String line;
-				line = reader.readLine();
-				System.out.println("Message from client :" + line);
-
-				if (line.equals("end")) {// endで 強制終了
-					System.exit(1);
-				}
+				String receivedText;
+				receivedText = reader.readLine();
+				System.out.println("Message from client :" + receivedText);
 
 				// Clientにメッセージ送信
-				sendout.println("Message is received at Server. Thankyou! your message is ["
-						+ line + "]");
+				sendout.println(NGCheck(receivedText));
 
 			} catch (IOException ioex) {
 				ioex.printStackTrace();
@@ -105,5 +98,16 @@ class GUIChatTCPServer2 {
 			}// finall end
 		}// run end
 	}// SrvWorkerThread end
+
+
+	String NGCheck(String text){
+		String checkedText;
+		if(text.contains("は")){
+			checkedText = NGColor + text + end;
+		}else{
+			checkedText = text;
+		}
+		return checkedText;
+	}
 
 }// class MultiServerSample end

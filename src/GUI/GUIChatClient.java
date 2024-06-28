@@ -1,6 +1,7 @@
 package GUI;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 
 //************以下、クライアントソフト。
@@ -39,13 +40,16 @@ class GUIChatClient extends JFrame {
     DefaultListModel model;
     JList list;
     JButton sendButton;
+
+	String hostname = "localhost";
+
+
 	public static void main(String[] args) {
 
 		JFrame w = new GUIChatClient( "Chat");
 
-		//JFrame w = new ChatGUI( "Chat" );
         w.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-        w.setSize( 600,800);
+        w.setSize( 480,640);
         w.setVisible( true );
 	}
 
@@ -72,37 +76,11 @@ class GUIChatClient extends JFrame {
 		messagePanel.add( sendButton );
 
 //通信
-
- 
-		String hostname = "localhost";
 		// String hostname="133.27....";//おとなりのipaddress
 
 		// doClientJob(hostname,"message hello1岩井");
 		// doClientJob(hostname,"message hello2");
 		// doClientJob(hostname, "face,接続実験メッセージfromClient名前");
-		// 課題のヒント
-
-		while (true) {
-			try {
-				
-				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));// キーボードから接続するサーバ名を読み込む
-				System.out.println("input command:");
-				
-				String commandfromClient = reader.readLine();
-				if(commandfromClient.equals("end")||commandfromClient.equals("1")){
-					System.out.println("end");
-					System.exit(1);
-				}
-					
-				doClientAccess(hostname, commandfromClient);
-				
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			sleep5();
-		}//while
-
 
 	}//multi tcp client
 	
@@ -113,10 +91,12 @@ class GUIChatClient extends JFrame {
 		    putValue( Action.SHORT_DESCRIPTION, "送信" );
         }
         public void actionPerformed(ActionEvent e){
-            String message = tf.getText();
+            String sendMessage = tf.getText();
             tf.setText("");
 
-            model.addElement(message);
+			doClientAccess(hostname, sendMessage);
+
+            
 		}
     }
 
@@ -136,8 +116,7 @@ class GUIChatClient extends JFrame {
 
 			// アドレス情報を保持するsocketAddressを作成。
 			// ポート番号は5000
-			InetSocketAddress socketAddress = new InetSocketAddress(hostname,
-					5656);
+			InetSocketAddress socketAddress = new InetSocketAddress(hostname,5656);
 
 			// socketAddressの値に基づいて通信に使用するソケットを作成する。
 			Socket socket = new Socket();
@@ -164,10 +143,9 @@ class GUIChatClient extends JFrame {
 			// PrintWriter型のwriterに、ソケットの出力ストリームを渡す。(Auto Flush)
 			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 			// ソケットの入力ストリームをBufferedReaderに渡す。
-			BufferedReader rd = new BufferedReader(new InputStreamReader(
-					socket.getInputStream()));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-			System.out.println("Send message: " + message);
+			//System.out.println("Send message: " + message);　//送信確認表示
 
 			// ソケットから出力する。
 			writer.println(message);
@@ -177,7 +155,16 @@ class GUIChatClient extends JFrame {
 
 			// サーバーからのメッセージ読み取り
 			String getline = rd.readLine();
-			System.out.println("Message from Server:" + getline);
+			System.out.println("recieved message: " + getline);//受信確認表示
+
+			//トーク履歴に追加
+			if(getline.contains("\u001b[00;31m")){
+				list.setBackground(Color.RED);
+				model.addElement("☆" + message + "☆");
+			}else{
+				model.addElement(message);
+			}
+
 
 			// 終了処理
 
