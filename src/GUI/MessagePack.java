@@ -1,57 +1,49 @@
 package GUI;
 
-public class MessagePack {
+import java.io.Serializable;
+
+public class MessagePack implements Serializable{
     private String name;
-    private int ID;
     private String NGWord;
     private String message;
     private boolean isNG;
 
-    MessagePack(String name, int ID, String NGWord){
+    public MessagePack(String name,String NGWord){
         setName(name);
-        setID(ID);
         setNGWord(NGWord);
         isNG = true;
     }
 
-    void setName(String name){
+    public void setName(String name){
         this.name = name;
     }
 
-    void setID(int ID){
-        this.ID = ID;
-    }
-
-    void setNGWord(String NGWord){
+    public void setNGWord(String NGWord){
         this.NGWord = NGWord;
     }
 
-    void setMessage(String message){
+    public void setMessage(String message){
         this.message = message;
     }
 
-    String getName(){
+    public String getName(){
         return name;
     }
 
-    int getID(){
-        return ID;
-    }
-
-    String getNGWord(){
+    public String getNGWord(){
         return NGWord;
     }
 
-    String getMessage(){
+    public String getMessage(){
         return message;
     }
 
-    boolean getIsNG(){
+    public boolean getIsNG(){
         return isNG;
     }
 
-    void checkMessage(String message){
-        if(message.contains(NGWord)){
+    public void checkMessage(){
+        if(this.message.contains(NGWord)){
             isNG = true;
         }
     }

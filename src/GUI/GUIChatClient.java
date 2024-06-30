@@ -58,13 +58,12 @@ class GUIChatClient extends JFrame {
 	}
 
 	GUIChatClient(String title) {// コンストラクター
-		id = 0;
 
 		try{
 			BufferedReader reader = // キーボードから接続するサーバ名を読み込む
 			new BufferedReader(new InputStreamReader(System.in));
 			System.out.println("名前を入力してください:");
-			messagePack = new MessagePack(reader.readLine(),id,"は");
+			messagePack = new MessagePack(reader.readLine(),"は");
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -115,8 +114,6 @@ class GUIChatClient extends JFrame {
             tf.setText("");
 
 			doClientAccess(hostname, sendMessage);
-
-            
 		}
     }
 
@@ -128,7 +125,6 @@ class GUIChatClient extends JFrame {
 			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 		}
-
 	}
 
 	public void doClientAccess(String hostname, String msg) {
@@ -163,39 +159,33 @@ class GUIChatClient extends JFrame {
 
 			// PrintWriter型のwriterに、ソケットの出力ストリームを渡す。(Auto Flush)
 			//PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-			ObjectOutputStream writer = new ObjectOutputStream(socket.getOutputStream());
+			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 
 			// ソケットの入力ストリームをBufferedReaderに渡す。
 			//BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			ObjectInputStream rd = new ObjectInputStream(socket.getInputStream());
-
-			//System.out.println("Send message: " + message);　//送信確認表示
+			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 
 			// ソケットから出力する。
-			//writer.println(messagePack);
-			writer.writeObject(messagePack);
-            writer.flush();
-
+			oos.writeObject(messagePack);
+            oos.flush();
 
 			// サーバーからのメッセージ読み取り
-			//MessagePack recievedPack = rd.readLine();
-			//System.out.println("recieved message: " + getline);//受信確認表示
-			MessagePack receivedPack = (MessagePack)rd.readObject();
+			MessagePack receivedPack = (MessagePack)ois.readObject();
 
-			String text = receivedPack.getID() + "," + receivedPack.getName() + " : " + receivedPack.getMessage();
+			String text = receivedPack.getName() + " : " + receivedPack.getMessage();
+
 			//トーク履歴に追加
-			if(receivedPack.getIsNG()){
+			if(receivedPack.getIsNG()){ //NGワードが含まれていたら背景を赤にして☆付きで表示
 				list.setBackground(Color.RED);
 				model.addElement("☆" + text + "☆");
 			}else{
 				model.addElement(text);
 			}
 
-
 			// 終了処理
 
-			rd.close();
-			writer.close();
+			ois.close();
+			oos.close();
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();

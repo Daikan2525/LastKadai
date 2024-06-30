@@ -1,26 +1,23 @@
 package GUI;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-class GUIChatServer {
+public class GUIChatServer {
 
-	String NGColor = "\u001b[00;31m";
-	String end = "\u001b[00m";
+	ServerSocket serverSoc;
 
 	public static void main(String[] args) {
-		new GUIChatServer(); 
+		new GUIChatServer();
 	}// mainend
 
 	public GUIChatServer() {
 		System.out.println("server started");
 		System.out.println("creating srv socket");
 
-		ServerSocket serverSoc = null;
 		try {
 			// ポート番号は、5656
 			// ソケットを作成
@@ -42,8 +39,6 @@ class GUIChatServer {
 				// スレッドを起動し、クライアントと通信する。
 				new SrvWorkerThread(socket, thcounter++).start();
 
-				// System.out.println("Waiting for New Connection. ");
-				// flag=false;
 			}// while end
 		} catch (IOException e) {
 			System.out.println("IOException!");
@@ -56,9 +51,9 @@ class GUIChatServer {
 			} catch (IOException ioex) {
 				ioex.printStackTrace();
 			}
-		}// finally end
+		}
 
-	}// MultiTCPServer(GUIAnimationFaceObjMain animation) end
+	}
 
 	class SrvWorkerThread extends Thread {
 		private Socket soc;
@@ -71,19 +66,24 @@ class GUIChatServer {
 		public void run() {
 			try {
 				// socketからのデータはInputStreamReaderに送り、さらに
-				// BufferedReaderによってバッファリングする。
-				BufferedReader reader = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+				ObjectInputStream ois = new ObjectInputStream(soc.getInputStream());
 
 				// Clientへの出力用PrintWriter
-				PrintWriter sendout = new PrintWriter(soc.getOutputStream(),true);
+				ObjectOutputStream oos = new ObjectOutputStream(soc.getOutputStream());
 
 				// データ読み取りと表示
-				String receivedText;
-				receivedText = reader.readLine();
-				System.out.println("Message from client :" + receivedText);
+				MessagePack receivedPack = (MessagePack)ois.readObject();
+				System.out.println("Message from client :" + receivedPack); // 確認用
+
+				receivedPack.checkMessage();
 
 				// Clientにメッセージ送信
-				sendout.println(NGCheck(receivedText));
+				oos.writeObject(receivedPack);
+				oos.flush();
+
+				ois.close();
+				oos.close();
+				
 
 			} catch (IOException ioex) {
 				ioex.printStackTrace();
@@ -98,16 +98,5 @@ class GUIChatServer {
 			}// finall end
 		}// run end
 	}// SrvWorkerThread end
-
-
-	String NGCheck(String text){
-		String checkedText;
-		if(text.contains("は")){
-			checkedText = NGColor + text + end;
-		}else{
-			checkedText = text;
-		}
-		return checkedText;
-	}
 
 }// class MultiServerSample end
