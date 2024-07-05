@@ -43,7 +43,7 @@ public class TCPServer {
                             try {
                                 sendPackToAllClient(
                                         new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + ": <" + clientId + "> "
-                                                + pack.getMessage(),
+                                                + pack.getMessage(), pack.getIsNG(),
                                         serverThreadArrayList);
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
@@ -52,7 +52,8 @@ public class TCPServer {
                         // 1つのクライアントとの接続が切れた
                         (disconnected) -> {
                             try {
-                                sendPackToAllClient(disconnected + "さんが退出しました", serverThreadArrayList);
+                                sendPackToAllClient(disconnected + "さんが退出しました", false,  serverThreadArrayList);
+                                System.out.println(disconnected + "さんが退出しました");
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
@@ -61,7 +62,8 @@ public class TCPServer {
                 serverThreadArrayList.add(lastServerThread);
                 lastServerThread.start();
                 try {
-                    sendPackToAllClient(lastServerThread.threadId() + "さんが参加しました", serverThreadArrayList);
+                    sendPackToAllClient(lastServerThread.threadId() + "さんが参加しました", false, serverThreadArrayList);
+                    System.out.println(lastServerThread.threadId() + "さんが参加しました");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -74,21 +76,13 @@ public class TCPServer {
     /**
      * サーバーに接続しているすべてのクライアントにメッセージを送信する
      */
-    /*
-    static public void sendMessageToAllClient(String message, ArrayList<Server1ClientThread> serverThreadArrayList)throws IOException {
-        for (final Server1ClientThread serverThread : serverThreadArrayList) {
-            if (!serverThread.isDisconnected) {
-                serverThread.sendTextToClient(message);
-            }
-        }
-    }
-    */
 
-    static public void sendPackToAllClient(String message, ArrayList<Server1ClientThread> serverThreadArrayList)throws IOException {
+
+    static public void sendPackToAllClient(String message, boolean check, ArrayList<Server1ClientThread> serverThreadArrayList)throws IOException {
         MessagePack pack = new MessagePack();
         pack.setName("System");
         pack.setNGWord(null);
-        pack.setIsNG(false);
+        pack.setIsNG(check);
         pack.setMessage(message);
         for (final Server1ClientThread serverThread : serverThreadArrayList) {
             if (!serverThread.isDisconnected) {
@@ -133,7 +127,9 @@ class Server1ClientThread extends Thread {
             while (true) {
                 try {
                     sendPack = (MessagePack)clientToServerStream.readObject();
+                    System.out.println(sendPack.getMessage());
                     logWithId("クライアントから " + sendPack.getMessage() + "を受け取りました");
+                    sendPack.checkMessage();
                     handler.accept(sendPack, threadId());
                 } catch (ClassNotFoundException e) {
                     // TODO Auto-generated catch block

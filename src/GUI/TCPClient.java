@@ -25,8 +25,6 @@ public class TCPClient {
         final ObjectInputStream serverToClientStream = new ObjectInputStream(socket.getInputStream());
         final ObjectOutputStream clientToServerStream = new ObjectOutputStream(socket.getOutputStream());
 
-        
-
         new Thread(
                 () -> {
                     MessagePack sendPack = null;
@@ -38,7 +36,11 @@ public class TCPClient {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                        System.out.println(sendPack.getMessage());
+                        if(sendPack.getIsNG()){
+                            System.out.println(sendPack.getMessage() + "-NGワードが含まれています-");
+                        }else{
+                            System.out.println(sendPack.getMessage());
+                        }
                     }
                 })
                 .start();
@@ -52,7 +54,7 @@ public class TCPClient {
             MessagePack sentPack = new MessagePack();
             sentPack.setName("Taro");
             sentPack.setIsNG(false);
-            sentPack.setNGWord("は");
+            sentPack.setNGWord("o");
             sentPack.setMessage(message);
 
             clientToServerStream.writeObject(sentPack);
