@@ -1,18 +1,11 @@
 package GUI;
-
 import java.io.Serializable;
 
 public class MessagePack implements Serializable{
-    private String name;
-    private String NGWord;
-    private String message;
-    private boolean isNG;
-
-    public MessagePack(String name,String NGWord){
-        setName(name);
-        setNGWord(NGWord);
-        isNG = true;
-    }
+    String name;
+    String NGWord;
+    String message;
+    boolean isNG;
 
     public void setName(String name){
         this.name = name;
@@ -24,6 +17,10 @@ public class MessagePack implements Serializable{
 
     public void setMessage(String message){
         this.message = message;
+    }
+
+    public void setIsNG(boolean check){
+        this.isNG = check;
     }
 
     public String getName(){
@@ -43,7 +40,7 @@ public class MessagePack implements Serializable{
     }
 
     public void checkMessage(){
-        if(this.message.contains(NGWord)){
+        if(getMessage().contains(NGWord)){
             isNG = true;
         }
     }
