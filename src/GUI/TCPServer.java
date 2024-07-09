@@ -1,4 +1,8 @@
 package GUI;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,8 +11,13 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
 /*
 サーバーの起動
 cd ./src
@@ -27,7 +36,42 @@ java --enable-preview TCPClient
 public class TCPServer {
     public static int portNumber = 1234;
 
+    // public static NGWordList NGlist = new NGWordList();
+
+    static Map<Long, String> map = new HashMap<>();
+
+    static List<String> lines;
+
     public static void main(String[] args) throws IOException {
+
+        lines = new ArrayList<>();
+
+        try {
+            // ファイルのパスを指定する
+            File file = new File("NGWordList.txt");
+
+            // ファイルが存在しない場合に例外が発生するので確認する
+            if (!file.exists()) {
+                System.out.print("ファイルが存在しません");
+                return;
+            }
+
+            // BufferedReaderクラスのreadLineメソッドを使って1行ずつ読み込み表示する
+            FileReader fileReader = new FileReader(file);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String data;
+            while ((data = bufferedReader.readLine()) != null) {
+                System.out.println(data);
+                lines.add(data);
+            }
+
+            // 最後にファイルを閉じてリソースを開放する
+            bufferedReader.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         final ArrayList<Server1ClientThread> serverThreadArrayList = new ArrayList<>();
         final ServerSocket serverSocket = new ServerSocket(portNumber);
 
@@ -42,22 +86,28 @@ public class TCPServer {
                         (pack, clientId) -> {
                             try {
                                 sendPackToAllClient(
-                                        new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + ": <" + clientId + "> "
-                                                + pack.getMessage(), pack.getIsNG(),
+                                        new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + ": <"
+                                                + clientId + "> "
+                                                + pack.getMessage(),
+                                        pack.checkMessage(map.get(clientId)),
                                         serverThreadArrayList);
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
                         },
                         // 1つのクライアントとの接続が切れた
+
                         (disconnected) -> {
                             try {
-                                sendPackToAllClient(disconnected + "さんが退出しました", false,  serverThreadArrayList);
+                                sendPackToAllClient(disconnected + "さんが退出しました", false, serverThreadArrayList);
                                 System.out.println(disconnected + "さんが退出しました");
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
                         });
+
+                map.put(lastServerThread.threadId(), chooseNGWord(lines));// IDとNGWordをセットでマップに格納
+                System.out.println(lastServerThread.threadId() + map.get(lastServerThread.threadId()));// IDとNGWord確認用
 
                 serverThreadArrayList.add(lastServerThread);
                 lastServerThread.start();
@@ -73,15 +123,20 @@ public class TCPServer {
         }
     }
 
+    static public String chooseNGWord(List<String> lines) {
+        int index = new Random().nextInt(lines.size());
+        String NGWord = lines.get(index);
+        return NGWord;
+    }
+
     /**
      * サーバーに接続しているすべてのクライアントにメッセージを送信する
      */
 
-
-    static public void sendPackToAllClient(String message, boolean check, ArrayList<Server1ClientThread> serverThreadArrayList)throws IOException {
+    static public void sendPackToAllClient(String message, boolean check,
+            ArrayList<Server1ClientThread> serverThreadArrayList) throws IOException {
         MessagePack pack = new MessagePack();
         pack.setName("System");
-        pack.setNGWord(null);
         pack.setIsNG(check);
         pack.setMessage(message);
         for (final Server1ClientThread serverThread : serverThreadArrayList) {
@@ -96,11 +151,12 @@ public class TCPServer {
  * 1つのクライアントからメッセージを受け取り, 送信するためのスレッド
  */
 class Server1ClientThread extends Thread {
+
     final Socket socket;
 
     final MessagePack pack;
 
-    //ラムダ式で２つの入力を受け付けるクラス
+    // ラムダ式で２つの入力を受け付けるクラス
     final BiConsumer<MessagePack, Long> handler;
 
     final Consumer<Long> onDisconnect;
@@ -108,7 +164,8 @@ class Server1ClientThread extends Thread {
 
     ObjectOutputStream serverToClientStream = null;
 
-    Server1ClientThread(final Socket socket, final BiConsumer<MessagePack, Long> handler, final Consumer<Long> onDisconnect) {
+    Server1ClientThread(final Socket socket, final BiConsumer<MessagePack, Long> handler,
+            final Consumer<Long> onDisconnect) {
         System.out.println("Server1ClientThreadを起動します");
         this.socket = socket;
         this.handler = handler;
@@ -123,13 +180,12 @@ class Server1ClientThread extends Thread {
 
             final ObjectInputStream clientToServerStream = new ObjectInputStream(socket.getInputStream());
             MessagePack sendPack;
-            
+
             while (true) {
                 try {
-                    sendPack = (MessagePack)clientToServerStream.readObject();
+                    sendPack = (MessagePack) clientToServerStream.readObject();
                     System.out.println(sendPack.getMessage());
                     logWithId("クライアントから " + sendPack.getMessage() + "を受け取りました");
-                    sendPack.checkMessage();
                     handler.accept(sendPack, threadId());
                 } catch (ClassNotFoundException e) {
                     // TODO Auto-generated catch block

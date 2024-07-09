@@ -1,10 +1,12 @@
 package GUI;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
+
 /*
 サーバーの起動
 cd ./src
@@ -36,9 +38,9 @@ public class TCPClientCp2 {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                        if(sendPack.getIsNG()){
+                        if (sendPack.getIsNG()) {
                             System.out.println(sendPack.getMessage() + "-NGワードが含まれています-");
-                        }else{
+                        } else {
                             System.out.println(sendPack.getMessage());
                         }
                     }
@@ -54,7 +56,6 @@ public class TCPClientCp2 {
             MessagePack sentPack = new MessagePack();
             sentPack.setName("Taro");
             sentPack.setIsNG(false);
-            sentPack.setNGWord("o");
             sentPack.setMessage(message);
 
             clientToServerStream.writeObject(sentPack);
