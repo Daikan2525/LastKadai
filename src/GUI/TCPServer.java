@@ -90,6 +90,7 @@ public class TCPServer {
                                                 + clientId + "> "
                                                 + pack.getMessage(),
                                         pack.checkMessage(map.get(clientId)),
+                                        null,
                                         serverThreadArrayList);
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
@@ -99,20 +100,21 @@ public class TCPServer {
 
                         (disconnected) -> {
                             try {
-                                sendPackToAllClient(disconnected + "さんが退出しました", false, serverThreadArrayList);
+                                sendPackToAllClient(disconnected + "さんが退出しました", false, null, serverThreadArrayList);
                                 System.out.println(disconnected + "さんが退出しました");
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
                         });
 
-                map.put(lastServerThread.threadId(), chooseNGWord(lines));// IDとNGWordをセットでマップに格納
-                System.out.println(lastServerThread.threadId() + map.get(lastServerThread.threadId()));// IDとNGWord確認用
-
                 serverThreadArrayList.add(lastServerThread);
                 lastServerThread.start();
                 try {
-                    sendPackToAllClient(lastServerThread.threadId() + "さんが参加しました", false, serverThreadArrayList);
+                    map.put(lastServerThread.threadId(), chooseNGWord(lines));// IDとNGWordをセットでマップに格納
+                    System.out.println(lastServerThread.threadId() + map.get(lastServerThread.threadId()));// IDとNGWord確認用
+
+                    sendPackToAllClient(lastServerThread.threadId() + "さんが参加しました", false,
+                            map.get(lastServerThread.threadId()), serverThreadArrayList);
                     System.out.println(lastServerThread.threadId() + "さんが参加しました");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -133,11 +135,12 @@ public class TCPServer {
      * サーバーに接続しているすべてのクライアントにメッセージを送信する
      */
 
-    static public void sendPackToAllClient(String message, boolean check,
+    static public void sendPackToAllClient(String message, boolean check, String NGWord,
             ArrayList<Server1ClientThread> serverThreadArrayList) throws IOException {
         MessagePack pack = new MessagePack();
         pack.setName("System");
         pack.setIsNG(check);
+        pack.setNGWord(NGWord);
         pack.setMessage(message);
         for (final Server1ClientThread serverThread : serverThreadArrayList) {
             if (!serverThread.isDisconnected) {
