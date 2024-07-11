@@ -111,7 +111,8 @@ public class TCPServer {
                 lastServerThread.start();
                 try {
                     map.put(lastServerThread.threadId(), chooseNGWord(lines));// IDとNGWordをセットでマップに格納
-                    System.out.println(lastServerThread.threadId() + map.get(lastServerThread.threadId()));// IDとNGWord確認用
+                    // System.out.println(lastServerThread.threadId() +
+                    // map.get(lastServerThread.threadId()));// IDとNGWord確認用
 
                     sendPackToAllClient(lastServerThread.threadId() + "さんが参加しました", false,
                             map.get(lastServerThread.threadId()), serverThreadArrayList);

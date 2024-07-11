@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class MessagePack implements Serializable {
     String name;
     String message;
+    String NGWord;
     boolean isNG;
 
     public void setName(String name) {
@@ -13,6 +14,10 @@ public class MessagePack implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public void setNGWord(String NGWord) {
+        this.NGWord = NGWord;
     }
 
     public void setIsNG(boolean check) {
@@ -25,6 +30,10 @@ public class MessagePack implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getNGWord() {
+        return NGWord;
     }
 
     public boolean getIsNG() {
