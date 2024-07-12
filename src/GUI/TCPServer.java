@@ -18,45 +18,24 @@ import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/*
-サーバーの起動
-cd ./src
-javac --enable-preview --source 20 TCPServer.java
-java --enable-preview TCPServer
-クライアントの起動
-cd ./src
-javac --enable-preview --source 20 TcpClient.java
-java --enable-preview TCPClient
- */
-
-/**
- * チャット コンソールアプリ の サーバー
- */
-
 public class TCPServer {
     public static int portNumber = 1234;
 
-    // public static NGWordList NGlist = new NGWordList();
-
     static Map<Long, String> map = new HashMap<>();
-
     static List<String> lines;
 
     public static void main(String[] args) throws IOException {
-
         lines = new ArrayList<>();
 
+        //NGワードリストtxtファイルの読み込み
         try {
-            // ファイルのパスを指定する
             File file = new File("NGWordList.txt");
 
-            // ファイルが存在しない場合に例外が発生するので確認する
             if (!file.exists()) {
                 System.out.print("ファイルが存在しません");
                 return;
             }
 
-            // BufferedReaderクラスのreadLineメソッドを使って1行ずつ読み込み表示する
             FileReader fileReader = new FileReader(file);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String data;
@@ -65,14 +44,13 @@ public class TCPServer {
                 lines.add(data);
             }
 
-            // 最後にファイルを閉じてリソースを開放する
             bufferedReader.close();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        final ArrayList<Server1ClientThread> serverThreadArrayList = new ArrayList<>();
+        final ArrayList<Server1ClientThread> serverThreadArrayList = new ArrayList<>(); //接続したクライアントのスレッドリスト
         final ServerSocket serverSocket = new ServerSocket(portNumber);
 
         try {
@@ -80,14 +58,13 @@ public class TCPServer {
                 System.out.println("新たなクライアントとの接続を待機しています");
                 final Socket socket = serverSocket.accept();
                 System.out.println("新たにクライアントと接続しました!");
-                // クライアントからメッセージを受け取るスレッド
+
                 final Server1ClientThread lastServerThread = new Server1ClientThread(socket,
-                        // 1つのクライアントからメッセージが来た
                         (pack, clientId) -> {
                             try {
                                 sendPackToAllClient(
                                         new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + ": <"
-                                                + clientId + "> "
+                                                + pack.getName() + "> "
                                                 + pack.getMessage(),
                                         pack.checkMessage(map.get(clientId)),
                                         null,
@@ -96,8 +73,6 @@ public class TCPServer {
                                 throw new RuntimeException(e);
                             }
                         },
-                        // 1つのクライアントとの接続が切れた
-
                         (disconnected) -> {
                             try {
                                 sendPackToAllClient(disconnected + "さんが退出しました", false, null, serverThreadArrayList);
@@ -107,16 +82,20 @@ public class TCPServer {
                             }
                         });
 
-                serverThreadArrayList.add(lastServerThread);
+                serverThreadArrayList.add(lastServerThread);    //新しい参加者をスレッドリストに追加
                 lastServerThread.start();
                 try {
-                    map.put(lastServerThread.threadId(), chooseNGWord(lines));// IDとNGWordをセットでマップに格納
-                    // System.out.println(lastServerThread.threadId() +
-                    // map.get(lastServerThread.threadId()));// IDとNGWord確認用
+                    long clientId = lastServerThread.threadId();
+                    map.put(clientId, chooseNGWord(lines));         //クライアントIDとワードとの紐づけ
+                    System.out.println(clientId + map.get(clientId));
 
-                    sendPackToAllClient(lastServerThread.threadId() + "さんが参加しました", false,
-                            map.get(lastServerThread.threadId()), serverThreadArrayList);
-                    System.out.println(lastServerThread.threadId() + "さんが参加しました");
+                    // 新しいクライアントに既存の参加者リストを送信
+                    sendExistingUsersToNewClient(lastServerThread, serverThreadArrayList);
+
+                    // 既存のクライアントに新しい参加者を通知
+                    sendPackToAllClient(clientId + "さんが参加しました", false,
+                            map.get(clientId), serverThreadArrayList);
+                    System.out.println(clientId + "さんが参加しました");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -126,16 +105,15 @@ public class TCPServer {
         }
     }
 
+
+    //Stringリストからランダムにワードを選ぶ
     static public String chooseNGWord(List<String> lines) {
         int index = new Random().nextInt(lines.size());
-        String NGWord = lines.get(index);
-        return NGWord;
+        return lines.get(index);
     }
 
-    /**
-     * サーバーに接続しているすべてのクライアントにメッセージを送信する
-     */
 
+    //すべてのクライアントにパックを送る
     static public void sendPackToAllClient(String message, boolean check, String NGWord,
             ArrayList<Server1ClientThread> serverThreadArrayList) throws IOException {
         MessagePack pack = new MessagePack();
@@ -149,23 +127,32 @@ public class TCPServer {
             }
         }
     }
+
+
+    //参加ユーザー情報を新規クライアントに送る
+    static public void sendExistingUsersToNewClient(Server1ClientThread newClient,
+            ArrayList<Server1ClientThread> serverThreadArrayList) throws IOException {
+        for (final Server1ClientThread serverThread : serverThreadArrayList) {
+            if (serverThread != newClient && !serverThread.isDisconnected) {
+                MessagePack pack = new MessagePack();
+                pack.setName("System");
+                pack.setIsNG(false);
+                pack.setMessage(serverThread.threadId() + "さんが参加しました");
+                newClient.sendDataToClient(pack);
+            }
+        }
+    }
 }
 
-/**
- * 1つのクライアントからメッセージを受け取り, 送信するためのスレッド
+
+/*
+ * ひとつのクライアントからメッセージを受け取り、送信するためのスレッド
  */
 class Server1ClientThread extends Thread {
-
     final Socket socket;
-
-    final MessagePack pack;
-
-    // ラムダ式で２つの入力を受け付けるクラス
     final BiConsumer<MessagePack, Long> handler;
-
     final Consumer<Long> onDisconnect;
     boolean isDisconnected = false;
-
     ObjectOutputStream serverToClientStream = null;
 
     Server1ClientThread(final Socket socket, final BiConsumer<MessagePack, Long> handler,
@@ -174,14 +161,12 @@ class Server1ClientThread extends Thread {
         this.socket = socket;
         this.handler = handler;
         this.onDisconnect = onDisconnect;
-        pack = null;
     }
 
     @Override
     public void run() {
         try {
             serverToClientStream = new ObjectOutputStream(socket.getOutputStream());
-
             final ObjectInputStream clientToServerStream = new ObjectInputStream(socket.getInputStream());
             MessagePack sendPack;
 
@@ -192,7 +177,6 @@ class Server1ClientThread extends Thread {
                     logWithId("クライアントから " + sendPack.getMessage() + "を受け取りました");
                     handler.accept(sendPack, threadId());
                 } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -202,16 +186,14 @@ class Server1ClientThread extends Thread {
         }
     }
 
-    /**
-     * クライアントにデータを送信する
-     */
 
+    /*
+     * データをクライアントに送る
+     */
     public void sendDataToClient(final MessagePack pack) throws IOException {
-        // まだ接続していないときは, 送信しない
         if (serverToClientStream == null) {
             return;
         }
-
         serverToClientStream.writeObject(pack);
         serverToClientStream.flush();
     }

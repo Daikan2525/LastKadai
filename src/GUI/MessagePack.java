@@ -3,47 +3,54 @@ package GUI;
 import java.io.Serializable;
 
 public class MessagePack implements Serializable {
-    String name;
-    String message;
-    String NGWord;
-    boolean isNG;
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void setNGWord(String NGWord) {
-        this.NGWord = NGWord;
-    }
-
-    public void setIsNG(boolean check) {
-        this.isNG = check;
-    }
+    private static final long serialVersionUID = 1L;
+    private String name;
+    private boolean isNG;
+    private String message;
+    private long clientId;
+    private String ngWord;
 
     public String getName() {
         return name;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public String getNGWord() {
-        return NGWord;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean getIsNG() {
         return isNG;
     }
 
-    public boolean checkMessage(String NGWord) {
-        if (getMessage().contains(NGWord)) {
-            isNG = true;
-        }
-        return isNG;
+    public void setIsNG(boolean isNG) {
+        this.isNG = isNG;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(long clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getNGWord() {
+        return ngWord;
+    }
+
+    public void setNGWord(String ngWord) {
+        this.ngWord = ngWord;
+    }
+
+    public boolean checkMessage(String ngWord) {
+        return message.contains(ngWord);
     }
 }
