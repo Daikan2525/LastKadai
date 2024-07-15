@@ -1,180 +1,186 @@
 package GUI;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Scanner;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+
+import kadai.MessagePack;
 
 public class TCPClient extends JFrame implements Runnable, ActionListener {
-    public static void main(String[] args) throws IOException {
-        System.out.println("キーボードから名前を入力してください");
-
-        Scanner scan = new Scanner(System.in);
-        String str = scan.next();
-        System.out.println("入力された文字は「" + str + "」です");
-        scan.close();
-
-        TCPClient window = new TCPClient(str);
+    public static void main(String[] args) {
+        TCPClient window = new TCPClient();
         window.setSize(800, 600);
         window.setVisible(true);
     }
 
-    private String name;
-    private static final String APPNAME = "NGワードゲーム";
+    private static final String APPNAME = "チャットクライアント";
     private static final String HOST = "localhost";
-    private static final int PORT = 1234;
+    private static final int PORT = 2815;
 
     private Socket socket;
     private Thread thread;
-    private JList userList;
-    private JTextArea msgTextArea;
-    private JTextField msgJTextField;
-    private JTextField nameAndNGWordField;
-    private JButton submitButton;
-
     private ObjectOutputStream output;
-    private DefaultListModel<String> userModel;
 
-    public TCPClient(String name) {
+    private DefaultListModel<String> userListModel;
+    private JList<String> userList;
+    private JTextArea msgTextArea;
+    private JTextField msgTextField;
+    private JTextField nameTextField;
+    private JButton submitButton;
+    private JButton renameButton;
+
+    public TCPClient() {
         super(APPNAME);
-        this.name = name;
 
-        JPanel leftPanel = new JPanel();
-        JPanel buttomPanel = new JPanel();
         JPanel userPanel = new JPanel();
+        JPanel leftPanel = new JPanel();
+        JPanel topPanel = new JPanel();
+        JPanel bottomPanel = new JPanel();
 
-        userModel = new DefaultListModel<>();
-        userList = new JList(userModel);
+        userListModel = new DefaultListModel<>();
+        userList = new JList<>(userListModel);
         msgTextArea = new JTextArea();
-        msgJTextField = new JTextField();
-        nameAndNGWordField = new JTextField();
+        msgTextField = new JTextField();
+        nameTextField = new JTextField();
         submitButton = new JButton("送信");
+        renameButton = new JButton("名前変更");
 
-        submitButton.addActionListener(this);
-        submitButton.setActionCommand("submit");
-
+        userPanel.setBorder(new TitledBorder("ユーザー一覧"));
         userPanel.setLayout(new BorderLayout());
-        userPanel.add(new JLabel("参加者とNGワード"), BorderLayout.NORTH);
         userPanel.add(new JScrollPane(userList), BorderLayout.CENTER);
 
-        nameAndNGWordField.setPreferredSize(new Dimension(200, nameAndNGWordField.getPreferredSize().height));
+        leftPanel.setLayout(new BorderLayout());
+        leftPanel.add(userPanel, BorderLayout.CENTER);
 
-        leftPanel.setLayout(new GridLayout(2, 1));
-        leftPanel.add(userPanel);
+        topPanel.setLayout(new BorderLayout());
+        topPanel.add(new JScrollPane(msgTextArea), BorderLayout.CENTER);
+        topPanel.add(leftPanel, BorderLayout.EAST);
 
-        buttomPanel.setLayout(new BorderLayout());
-        buttomPanel.add(msgJTextField, BorderLayout.CENTER);
-        buttomPanel.add(submitButton, BorderLayout.EAST);
+        bottomPanel.setBorder(new TitledBorder("メッセージ"));
+        bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.add(msgTextField, BorderLayout.CENTER);
+        bottomPanel.add(submitButton, BorderLayout.EAST);
+
+        JPanel renamePanel = new JPanel();
+        renamePanel.setBorder(new TitledBorder("ユーザー名変更"));
+        renamePanel.setLayout(new BorderLayout());
+        renamePanel.add(nameTextField, BorderLayout.CENTER);
+        renamePanel.add(renameButton, BorderLayout.EAST);
+
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(topPanel, BorderLayout.CENTER);
+        contentPane.add(bottomPanel, BorderLayout.SOUTH);
+        contentPane.add(renamePanel, BorderLayout.NORTH);
+
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) { System.exit(0); }
+        });
+
+        submitButton.addActionListener(this);
+        renameButton.addActionListener(this);
+        msgTextField.addActionListener(this);
+        nameTextField.addActionListener(this);
 
         msgTextArea.setEditable(false);
 
-        this.getContentPane().add(new JScrollPane(msgTextArea), BorderLayout.CENTER);
-        this.getContentPane().add(leftPanel, BorderLayout.WEST);
-        this.getContentPane().add(buttomPanel, BorderLayout.SOUTH);
-
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                try {
-                    close();
-                } catch (Exception err) {
-                }
-            }
-        });
-        connectServer();
-
-        thread = new Thread(this);
-        thread.start();
+        connect();
     }
 
-    public void connectServer() {
+    public void connect() {
         try {
             socket = new Socket(HOST, PORT);
             output = new ObjectOutputStream(socket.getOutputStream());
-            msgTextArea.append("接続しました。\n");
-        } catch (Exception err) {
-            msgTextArea.append("ERROR>" + err + "\n");
+
+            thread = new Thread(this);
+            thread.start();
         }
-    }
-
-    public void close() throws IOException {
-        socket.close();
-    }
-
-    public void sendMessage(String msg) {
-        try {
-            msg = msgJTextField.getText();
-            MessagePack sentPack = new MessagePack();
-            sentPack.setName(name);
-            sentPack.setIsNG(false);
-            sentPack.setMessage(msg);
-
-            output.writeObject(sentPack);
-            output.flush();
-        } catch (Exception err) {
-            msgTextArea.append("ERROR>" + err + "\n");
-        }
-    }
-
-    public void reachedMessage(String value, boolean isNG, long clientId) {
-        msgTextArea.append(value + "\n");
-
-        if (value.contains("さんが参加しました") || value.contains("さんが退出しました")) {
-            String[] parts = value.split("さんが");
-            if (parts.length > 0) {
-                if (value.contains("参加しました")) {
-                    String user = parts[0];
-                    if (isNG) {
-                        user += " (NGワード: " + parts[1].split("NGワード:")[1].trim() + ")";
-                    }
-                    if (!userModel.contains(user)) {
-                        userModel.addElement(user);
-                    }
-                } else if (value.contains("退出しました")) {
-                    userModel.removeElement(parts[0]);
-                }
-            }
+        catch(Exception err) {
+            err.printStackTrace();
         }
     }
 
     public void run() {
         try {
             MessagePack sendPack = null;
-            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-            while (!socket.isClosed()) {
-                sendPack = (MessagePack) input.readObject();
-                if (sendPack.getIsNG()) {
-                    reachedMessage(sendPack.getMessage() + "-NGワードが含まれています-", sendPack.getIsNG(), sendPack.getClientId());
-                } else {
-                    reachedMessage(sendPack.getMessage(), sendPack.getIsNG(), sendPack.getClientId());
+            InputStream input = socket.getInputStream();
+            ObjectInputStream objectInput = new ObjectInputStream(input);
+
+            while(!socket.isClosed()) {
+                sendPack = (MessagePack) objectInput.readObject();
+
+                if(sendPack.getName().equals("users")) {
+                    String[] users = sendPack.getMessage().split(" ");
+                    userListModel.clear();
+                    for (String user : users) {
+                        userListModel.addElement(user);
+                    }
+                }
+                else if(sendPack.getName().equals("msg")){
+                    msgTextArea.append(sendPack.getMessage() + "\n");
+                }
+                else if(sendPack.getName().equals("successful")){
+                    if(sendPack.getName().equals("setName")) msgTextArea.append("名前変更に失敗しました。/n");
+                }
+                else if(sendPack.getName().equals("error")){
+                    msgTextArea.append("ERROR> " + sendPack.getMessage() + "\n");
                 }
             }
-        } catch (Exception err) {
+        }
+        catch(Exception err) {
             err.printStackTrace();
         }
     }
 
     public void actionPerformed(ActionEvent e) {
-        sendMessage("msg " + msgJTextField.getText());
-        msgJTextField.setText("");
-        System.out.println("送信しました");
+        Object source = e.getSource();
+
+        if (source == msgTextField || source == submitButton) {
+            String text = msgTextField.getText();
+            msgTextField.setText("");
+            MessagePack pack = new MessagePack();
+            pack.setName("msg");
+            pack.setIsNG(false);
+            pack.setMessage(text);
+            
+            sendMessage(pack);
+        }
+        else if (source == nameTextField || source == renameButton) {
+            String text = nameTextField.getText();
+            nameTextField.setText("");
+            MessagePack pack = new MessagePack();
+            pack.setName("setName");
+            pack.setIsNG(false);
+            pack.setMessage(text);
+
+            sendMessage(pack);
+        }
+    }
+
+    public void sendMessage(MessagePack messagePack) {
+        try {
+            output.writeObject(messagePack);
+            output.flush();
+        }
+        catch(Exception err) {
+            err.printStackTrace();
+        }
     }
 }
