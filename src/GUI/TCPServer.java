@@ -41,7 +41,6 @@ public class TCPServer {
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			String data;
 			while ((data = bufferedReader.readLine()) != null) {
-				System.out.println(data);
 				lines.add(data);
 			}
 

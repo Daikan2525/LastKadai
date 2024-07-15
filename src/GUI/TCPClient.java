@@ -129,6 +129,7 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
                     String[] users = sendPack.getMessage().split(" ");
                     String[] ngWords = sendPack.getNGWord().split(" ");
                     userListModel.clear();
+
                     /*
                      * for (String user : users) {
                      * userListModel.addElement(user + ",NGWord:" + sendPack.getNGWord());
@@ -139,7 +140,7 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
                      */
 
                     for (int i = 0; i < users.length; i++) {
-                        if (!users[i].equals(getName())) {
+                        if (!users[i].equals(nameTextField.getText())) {
                             userListModel.addElement(users[i] + ",NGWord:" + ngWords[i]);
                         }
                     }
@@ -168,7 +169,6 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
             pack.setName("msg");
             pack.setIsNG(false);
             pack.setMessage(text);
-
             sendMessage(pack);
         } else if (source == nameTextField || source == renameButton) {
             String text = nameTextField.getText();
@@ -178,7 +178,6 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
                 pack.setName("setName");
                 pack.setIsNG(false);
                 pack.setMessage(text);
-
                 sendMessage(pack);
             }
         }
