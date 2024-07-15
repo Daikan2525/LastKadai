@@ -16,6 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+<<<<<<< HEAD
+=======
+
+import kadai.MessagePack;
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 
 public class TCPServer {
 
@@ -28,7 +33,11 @@ public class TCPServer {
 		TCPServer application = TCPServer.getInstance();
 		lines = new ArrayList<>();
 
+<<<<<<< HEAD
 		// NGワードリストの読み取り
+=======
+		//NGワードリストの読み取り
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 		try {
 			File file = new File("NGWordList.txt");
 
@@ -56,7 +65,11 @@ public class TCPServer {
 
 	private static TCPServer instance;
 
+<<<<<<< HEAD
 	// インスタンスの取得
+=======
+	//インスタンスの取得
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public static TCPServer getInstance() {
 		if (instance == null) {
 			instance = new TCPServer();
@@ -71,7 +84,11 @@ public class TCPServer {
 		userList = new ArrayList<ChatClientUser>(); // ユーザーリストの初期化
 	}
 
+<<<<<<< HEAD
 	// 処理開始
+=======
+	//処理開始
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void start() {
 		try {
 			server = new ServerSocket(2815);
@@ -80,7 +97,10 @@ public class TCPServer {
 				Socket client = server.accept();
 				ChatClientUser user = new ChatClientUser(client, generateClientId());
 				assignRandomNgWord(user.getClientId());
+<<<<<<< HEAD
 				user.setNGWord(map.get(user.getClientId()));
+=======
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 				addUser(user); // ユーザーリストに追加
 			}
 		} catch (Exception err) {
@@ -88,21 +108,36 @@ public class TCPServer {
 		}
 	}
 
+<<<<<<< HEAD
 	// クライアントIDの生成
+=======
+	//クライアントIDの生成
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	private synchronized long generateClientId() {
 		return clientIdCounter++;
 	}
 
+<<<<<<< HEAD
 	// サーバー管理のクライアントリストにクライアントを追加
+=======
+	//サーバー管理のクライアントリストにクライアントを追加
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void addUser(ChatClientUser user) {
 		if (userList.contains(user))
 			return;
 
 		userList.add(user); // ユーザーリストにユーザーを追加
+<<<<<<< HEAD
 		System.out.println("addUser=[" + user + "], clientID=[" + user.getClientId() + "]");
 	}
 
 	// ユーザー情報(個人)を取得
+=======
+		System.out.println("addUser=[" + user + "]");
+	}
+
+	//ユーザー情報(個人)を取得
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public ChatClientUser getUser(String name) {
 		for (int i = 0; i < userList.size(); i++) {
 			ChatClientUser user = userList.get(i);
@@ -112,20 +147,32 @@ public class TCPServer {
 		return null;
 	}
 
+<<<<<<< HEAD
 	// ユーザー情報(全員)を取得
+=======
+	//ユーザー情報(全員)を取得
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public ChatClientUser[] getUsers() {
 		ChatClientUser[] users = new ChatClientUser[userList.size()];
 		userList.toArray(users);
 		return users;
 	}
 
+<<<<<<< HEAD
 	// ユーザーの削除
+=======
+	//ユーザーの削除
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void removeUser(ChatClientUser user) {
 		userList.remove(user);
 		System.out.println("removeUser=[" + user + "]");
 	}
 
+<<<<<<< HEAD
 	// 全ユーザーの削除
+=======
+	//全ユーザーの削除
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void clearUser() {
 		userList.clear();
 	}
@@ -134,19 +181,31 @@ public class TCPServer {
 		server.close();
 	}
 
+<<<<<<< HEAD
 	// 全クライアントにパックを送信
+=======
+	//全クライアントにパックを送信
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void broadcast(MessagePack messagePack) {
 		for (ChatClientUser user : userList) {
 			user.sendMessage(messagePack);
 		}
 	}
 
+<<<<<<< HEAD
 	// IDからNGワードを取得
+=======
+	//IDからNGワードを取得
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public String getNgWord(long clientId) {
 		return map.get(clientId);
 	}
 
+<<<<<<< HEAD
 	// NGワードを登録
+=======
+	//NGワードを登録
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	private void assignRandomNgWord(long clientId) {
 		if (!lines.isEmpty()) {
 			String ngWord = lines.get(random.nextInt(lines.size()));
@@ -157,7 +216,11 @@ public class TCPServer {
 
 }
 
+<<<<<<< HEAD
 // メッセージを受け取った時のイベントを管理する
+=======
+//メッセージを受け取った時のイベントを管理する
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 class MessageEvent extends EventObject {
 	private ChatClientUser source;
 	private String name;
@@ -187,12 +250,19 @@ interface MessageListener extends EventListener {
 	void messageThrow(MessageEvent e); // メッセージイベントを処理するリスナインターフェース
 }
 
+<<<<<<< HEAD
 // クライアント一人の相手をして処理をするクラス
+=======
+//クライアント一人の相手をして処理をするクラス
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 class ChatClientUser implements Runnable, MessageListener {
 	private Socket socket; // クライアントとのソケット
 	private String name; // ユーザー名
 	private long clientId;
+<<<<<<< HEAD
 	private String ngWord;
+=======
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	private TCPServer server = TCPServer.getInstance(); // ChatServerのインスタンス
 	private ArrayList<MessageListener> messageListeners; // メッセージリスナーのリスト
 	private ObjectOutputStream output;
@@ -225,6 +295,7 @@ class ChatClientUser implements Runnable, MessageListener {
 		return this.name;
 	}
 
+<<<<<<< HEAD
 	public void setNGWord(String word) {
 		this.ngWord = word;
 	}
@@ -233,6 +304,8 @@ class ChatClientUser implements Runnable, MessageListener {
 		return this.ngWord;
 	}
 
+=======
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void run() {
 		try {
 			InputStream input = socket.getInputStream(); // ソケットからの入力ストリームを取得
@@ -250,7 +323,11 @@ class ChatClientUser implements Runnable, MessageListener {
 		}
 	}
 
+<<<<<<< HEAD
 	// メッセージイベントの受け取り
+=======
+	//メッセージイベントの受け取り
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void messageThrow(MessageEvent e) {
 		String msgType = e.getName(); // イベントの種類
 		String msgValue = e.getValue(); // イベントの値
@@ -261,13 +338,21 @@ class ChatClientUser implements Runnable, MessageListener {
 			} catch (IOException err) {
 				err.printStackTrace();
 			}
+<<<<<<< HEAD
 		} else if (msgType.equals("setName")) { // イベント「名前変更」
+=======
+		} else if (msgType.equals("setName")) { //イベント「名前変更」
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 			String name = msgValue;
 			if (name.indexOf(" ") == -1) {
 				String before = getName();
 				setName(name);
 
+<<<<<<< HEAD
 				// 送信するパックの作成
+=======
+				//送信するパックの作成
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 				MessagePack pack = new MessagePack();
 				pack.setName("setName");
 				pack.setIsNG(false);
@@ -275,7 +360,11 @@ class ChatClientUser implements Runnable, MessageListener {
 				pack.setClientId(clientId);
 				sendMessage(pack);
 
+<<<<<<< HEAD
 				// 全員に送信するパックの作成
+=======
+				//全員に送信するパックの作成
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 				MessagePack packBroadcast = new MessagePack();
 				packBroadcast.setName("broadcast");
 				packBroadcast.setIsNG(false);
@@ -284,14 +373,22 @@ class ChatClientUser implements Runnable, MessageListener {
 				server.broadcast(packBroadcast);
 				updateUsers();
 			} else {
+<<<<<<< HEAD
 				// エラー時のメッセージ
 				MessagePack error = new MessagePack();
 				error.setName("error");
 				error.setIsNG(false);
+=======
+				//エラー時のメッセージ
+				MessagePack error = new MessagePack();
+				error.setName("error");
+				error.setIsNG(true);
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 				error.setMessage("名前にスペースを含めることはできません");
 				error.setClientId(clientId);
 				sendMessage(error);
 			}
+<<<<<<< HEAD
 		} else if (msgType.equals("getUsers")) { // イベント「全ユーザーの取得」
 			String result = "";
 			ChatClientUser[] users = server.getUsers();
@@ -300,6 +397,16 @@ class ChatClientUser implements Runnable, MessageListener {
 			}
 
 			// 送信用パック
+=======
+		} else if (msgType.equals("getUsers")) { //イベント「全ユーザーの取得」
+			String result = "";
+			ChatClientUser[] users = server.getUsers();
+			for (int i = 0; i < users.length; i++) {
+				result += users[i].getName() + " "; //スペース区切りでユーザー名を書き込む
+			}
+
+			//送信用パック
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 			MessagePack userList = new MessagePack();
 			userList.setName("users");
 			userList.setIsNG(false);
@@ -309,6 +416,7 @@ class ChatClientUser implements Runnable, MessageListener {
 		} else if (msgType.equals("msg")) { // イベント「メッセージ」
 			String ngWord = server.getNgWord(clientId);
 			if (msgValue.contains(ngWord)) {
+<<<<<<< HEAD
 				// 送信用パックの作成
 				MessagePack error = new MessagePack();
 				error.setName("error");
@@ -316,6 +424,15 @@ class ChatClientUser implements Runnable, MessageListener {
 				error.setMessage("<" + getName() + "> : " + msgValue + "NGワードが含まれています: " + ngWord);
 				error.setClientId(clientId);
 				server.broadcast(error);
+=======
+				//送信用パックの作成
+				MessagePack error = new MessagePack();
+				error.setName("error");
+				error.setIsNG(true);
+				error.setMessage("<"+ getName()+"> : "+ msgValue +"NGワードが含まれています: " + ngWord);
+				error.setClientId(clientId);
+				sendMessage(error);
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 			} else {
 				String message = "<" + getName() + "> : " + msgValue;
 				MessagePack msg = new MessagePack();
@@ -339,7 +456,11 @@ class ChatClientUser implements Runnable, MessageListener {
 		updateUsers();
 	}
 
+<<<<<<< HEAD
 	// 送信メソッド
+=======
+	//送信メソッド
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void sendMessage(MessagePack messagePack) {
 		try {
 			output.writeObject(messagePack);
@@ -348,7 +469,11 @@ class ChatClientUser implements Runnable, MessageListener {
 		}
 	}
 
+<<<<<<< HEAD
 	// メッセージ受け取り処理
+=======
+	//メッセージ受け取り処理
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 	public void reachedMessage(String name, String value) {
 		MessageEvent event = new MessageEvent(this, name, value);
 		for (int i = 0; i < messageListeners.size(); i++) {
@@ -372,18 +497,27 @@ class ChatClientUser implements Runnable, MessageListener {
 
 	private void updateUsers() { // ユーザー情報を更新する処理
 		String result = "";
+<<<<<<< HEAD
 		String ngResult = "";
 		ChatClientUser[] users = server.getUsers();
 		for (ChatClientUser user : users) {
 			result += user.getName() + " ";
 			ngResult += user.getNGWord() + " ";
+=======
+		ChatClientUser[] users = server.getUsers();
+		for (ChatClientUser user : users) {
+			result += user.getName() + " ";
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 		}
 		MessagePack forUsers = new MessagePack();
 		forUsers.setName("users");
 		forUsers.setIsNG(false);
 		forUsers.setMessage(result.toString());
 		forUsers.setClientId(clientId);
+<<<<<<< HEAD
 		forUsers.setNGWord(ngResult);
+=======
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
 		server.broadcast(forUsers);
 	}
 }

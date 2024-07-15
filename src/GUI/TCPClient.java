@@ -21,6 +21,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+<<<<<<< HEAD
 public class TCPClient extends JFrame implements Runnable, ActionListener {
     public static void main(String[] args) {
         TCPClient window = new TCPClient();
@@ -32,6 +33,21 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
     private static final String HOST = "localhost";
     private static final int PORT = 2815;
 
+=======
+import kadai.MessagePack;
+
+public class TCPClient extends JFrame implements Runnable, ActionListener {
+    public static void main(String[] args) {
+        TCPClient window = new TCPClient();
+        window.setSize(800, 600);
+        window.setVisible(true);
+    }
+
+    private static final String APPNAME = "チャットクライアント";
+    private static final String HOST = "localhost";
+    private static final int PORT = 2815;
+
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
     private Socket socket;
     private Thread thread;
     private ObjectOutputStream output;
@@ -89,9 +105,13 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
         contentPane.add(renamePanel, BorderLayout.NORTH);
 
         addWindowListener(new WindowAdapter() {
+<<<<<<< HEAD
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
             }
+=======
+            public void windowClosing(WindowEvent e) { System.exit(0); }
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
         });
 
         submitButton.addActionListener(this);
@@ -111,7 +131,12 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
 
             thread = new Thread(this);
             thread.start();
+<<<<<<< HEAD
         } catch (Exception err) {
+=======
+        }
+        catch(Exception err) {
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
             err.printStackTrace();
         }
     }
@@ -122,6 +147,7 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
             InputStream input = socket.getInputStream();
             ObjectInputStream objectInput = new ObjectInputStream(input);
 
+<<<<<<< HEAD
             while (!socket.isClosed()) {
                 sendPack = (MessagePack) objectInput.readObject();
 
@@ -181,6 +207,56 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
 
                 sendMessage(pack);
             }
+=======
+            while(!socket.isClosed()) {
+                sendPack = (MessagePack) objectInput.readObject();
+
+                if(sendPack.getName().equals("users")) {
+                    String[] users = sendPack.getMessage().split(" ");
+                    userListModel.clear();
+                    for (String user : users) {
+                        userListModel.addElement(user);
+                    }
+                }
+                else if(sendPack.getName().equals("msg")){
+                    msgTextArea.append(sendPack.getMessage() + "\n");
+                }
+                else if(sendPack.getName().equals("successful")){
+                    if(sendPack.getName().equals("setName")) msgTextArea.append("名前変更に失敗しました。/n");
+                }
+                else if(sendPack.getName().equals("error")){
+                    msgTextArea.append("ERROR> " + sendPack.getMessage() + "\n");
+                }
+            }
+        }
+        catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+
+        if (source == msgTextField || source == submitButton) {
+            String text = msgTextField.getText();
+            msgTextField.setText("");
+            MessagePack pack = new MessagePack();
+            pack.setName("msg");
+            pack.setIsNG(false);
+            pack.setMessage(text);
+            
+            sendMessage(pack);
+        }
+        else if (source == nameTextField || source == renameButton) {
+            String text = nameTextField.getText();
+            nameTextField.setText("");
+            MessagePack pack = new MessagePack();
+            pack.setName("setName");
+            pack.setIsNG(false);
+            pack.setMessage(text);
+
+            sendMessage(pack);
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
         }
     }
 
@@ -188,7 +264,12 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
         try {
             output.writeObject(messagePack);
             output.flush();
+<<<<<<< HEAD
         } catch (Exception err) {
+=======
+        }
+        catch(Exception err) {
+>>>>>>> 25c1d03882f9d5ee7b16ffb17845c47b89bb0d5d
             err.printStackTrace();
         }
     }
