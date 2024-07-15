@@ -21,9 +21,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-public class TCPClient extends JFrame implements Runnable, ActionListener {
+public class TCPClient2 extends JFrame implements Runnable, ActionListener {
     public static void main(String[] args) {
-        TCPClient window = new TCPClient();
+        TCPClient2 window = new TCPClient2();
         window.setSize(800, 600);
         window.setVisible(true);
     }
@@ -44,7 +44,7 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
     private JButton submitButton;
     private JButton renameButton;
 
-    public TCPClient() {
+    public TCPClient2() {
         super(APPNAME);
 
         JPanel userPanel = new JPanel();
