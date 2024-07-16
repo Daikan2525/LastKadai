@@ -141,7 +141,13 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
 
                     for (int i = 0; i < users.length; i++) {
                         if (!users[i].equals(nameTextField.getText())) {
-                            userListModel.addElement(users[i] + ",NGWord:" + ngWords[i]);
+                            if (users[i].equals("null")) {
+                                userListModel.addElement("名前設定中");
+                            } else {
+                                userListModel.addElement(users[i] + ",NGWord:" + ngWords[i]);
+                            }
+                        } else {
+                            userListModel.addElement(users[i] + ",NGWord: 非表示");
                         }
                     }
 
@@ -151,7 +157,7 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
                     if (sendPack.getName().equals("setName"))
                         msgTextArea.append("名前変更に失敗しました。/n");
                 } else if (sendPack.getName().equals("error")) {
-                    msgTextArea.append("ERROR> " + sendPack.getMessage() + "\n");
+                    msgTextArea.append("Msg from Server> " + sendPack.getMessage() + "\n");
                 }
             }
         } catch (Exception err) {
