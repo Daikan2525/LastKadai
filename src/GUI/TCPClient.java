@@ -157,7 +157,7 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
                     if (sendPack.getName().equals("setName"))
                         msgTextArea.append("名前変更に失敗しました。/n");
                 } else if (sendPack.getName().equals("error")) {
-                    msgTextArea.append("Msg from Server> " + sendPack.getMessage() + "\n");
+                    msgTextArea.append(sendPack.getMessage() + "\n");
                 }
             }
         } catch (Exception err) {
