@@ -319,7 +319,7 @@ class ChatClientUser implements Runnable, MessageListener {
 				MessagePack error = new MessagePack();
 				error.setName("error");
 				error.setIsNG(true);
-				error.setMessage("<" + getName() + "> : " + msgValue + "  -NGワードが含まれています: " + ngWord);
+				error.setMessage("<" + getName() + "> : " + msgValue + "  -NGワードが含まれています: 「" + ngWord + "」");
 				error.setClientId(clientId);
 				server.broadcast(error);
 

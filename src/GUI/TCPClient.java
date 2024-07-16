@@ -130,15 +130,6 @@ public class TCPClient extends JFrame implements Runnable, ActionListener {
                     String[] ngWords = sendPack.getNGWord().split(" ");
                     userListModel.clear();
 
-                    /*
-                     * for (String user : users) {
-                     * userListModel.addElement(user + ",NGWord:" + sendPack.getNGWord());
-                     * }
-                     * for (String ngWord : ngWords) {
-                     * userListModel.addElement(user + ",NGWord:" + sendPack.getNGWord());
-                     * }
-                     */
-
                     for (int i = 0; i < users.length; i++) {
                         if (!users[i].equals(nameTextField.getText())) {
                             if (users[i].equals("null")) {
